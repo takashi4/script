@@ -12,10 +12,12 @@ use Web::Scraper;
 use Net::SMTP::TLS;
 use List::AllUtils qw( shuffle part );
 use MIME::Base64;
+use File::Basename;
 use Getopt::Long;
 Getopt::Long::Configure("bundling");
 
-require "$ENV{HOME}/.pass/$0.pass";
+my $exec_file = basename( $0 );
+require "$ENV{HOME}/.pass/$exec_file.pass";
 
 my $UA = 'Mozilla/5.0 (Linux; U; Android 2.3.5; ja-jp; F-05D Build/F0001) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1';
 my %URL = (
@@ -27,6 +29,14 @@ my $MAIL_HOST = 'smtp.gmail.com';
 my $MAIL_PORT = 587;
 my @MAIL_TO   = @_::MAIL_TO;
 my $MAIL_FROM = $_::MAIL_FROM;
+my $PID_FILE  = "$ENV{HOME}/.fa.pid";
+
+if (-e $PID_FILE) {
+	print("ALREADY RUNNING\n");
+	exit;
+}
+`touch $PID_FILE`;
+$SIG{INT} = $SIG{TERM} = sub {_del_pid(); print("Catch SIGNAL\n");exit(1);};
 
 my @PROXY_LIST = ();
 chomp, push(@PROXY_LIST, $_) while (<DATA>);
@@ -74,8 +84,13 @@ while (1) {
 				subject => '新着！'._get_yyyymmdd().'@fa',
 				content => _make_content( $diff_result ),
 			);
+			$err_cnt = 0;
 		}
-		$err_cnt = 0;
+		
+		_send_mail(
+			subject => "エラー復帰 (".(_get_yyyymmdd()).') @fa',
+			content => '捜索をつづけます。。。',
+		), $err_cnt = 0 if ($err_cnt > 0);
 		sleep 600;
 	};
 	if (my $err = $@) {
@@ -85,9 +100,8 @@ while (1) {
 			content => "$proxy_host\n $0 @ ".(`hostname`)." $err\n"
 			           .($err_cnt == $MAX_ERROR_CNT ? 'die...' : ''),
 		);
-		exit( 1 )
+		_del_pid(), exit( 1 )
 			if ($err_cnt == $MAX_ERROR_CNT);
-		
 		sleep 60;
 	}
 }
@@ -337,9 +351,21 @@ sub _log {
 	my $ymd = `date +%Y%m%d`; chomp( $ymd );
 	open(my $fh, '>>', "$LOG_FILE.$ymd");
 	print( $fh "================ $kind ==================\n" );
-	map { print( $fh join("\t", $time, @$_{qw(id  post_date  pref)})."\n" ) }
+
+	map {
+		print( $fh
+			join("\t",
+				$time, @$_{qw(id  post_date)},
+				encode_utf8($_->{pref})
+			)."\n" );
+	}
 	@data;
+
 	close( $fh );
+}
+
+sub _del_pid {
+	unlink( $PID_FILE );
 }
 
 sub _view_help {
@@ -375,9 +401,14 @@ USAGE
 #http://asuka.tsreiz.jp:10080/
 #http://h242-33.ntcu.net/
 #http://ec2-176-34-58-27.ap-northeast-1.compute.amazonaws.com/
+#http://122.252.183.60:8080/
+#http://114.30.47.10/
+#http://211-76-97-152.ebix.net.tw/
+#http://211-76-97-148.ebix.net.tw/
+#http://122.252.183.60:8080/
 
 __DATA__
 http://210.51.43.82/
-http://122.252.183.60:8080/
 http://c.oconee.k12.sc.us:553/
+http://125.95.189.42:8909/
 
