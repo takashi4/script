@@ -1,4 +1,4 @@
-package TT::PROXY;
+package TT::PROXY2;
 
 use strict;
 use URI;
@@ -8,27 +8,40 @@ use LWP;
 use HTTP::Request::Common qw(GET POST);
 use Web::Scraper;
 use Cache::FileCache;
-use List::AllUtils qw( shuffle first );
+use List::AllUtils qw( shuffle );
 
-my $URL = q{http://www.cybersyndrome.net/pla5.html};
+my $URL = q{http://www.freeproxylists.com};
+
 my $UA  = 'Mozilla/5.0 (Linux; U; Android 2.3.5; ja-jp; F-05D Build/F0001) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1';
 my $TTL = 30*60;
 
 my $PROXY_KEY     = 'proxy';
 my $BLACK_KEY     = 'black';
-my $PROXY_TIMEOUT = 10;
-my @LOCAL_PROXY   = qw(
-	localhost:8118
-);
+my $PROXY_TIMEOUT = 5;
 
 my $fcache  = Cache::FileCache->new({
 	namespace => __PACKAGE__,
 });
-my $scraper = scraper {
-	process( '//ol/li/a', 'list[]' => 'TEXT' );
-	result( 'list' );
-};
-my %black_list = ();
+my %black_list = %{$fcache->get( $BLACK_KEY ) || {}};
+
+my @SCRAPERS = (
+	scraper {
+		process '/html/body/table/tr/td/table/tr/td/table/tr/td/a', 'urls[]' => '@href';
+		result 'urls';
+	},
+	scraper {
+		process '/html/body', onload => '@onload';
+		result 'onload';
+	},
+	scraper {
+		process '/html/root/quote', text => 'TEXT';
+		result 'text';
+	},
+	scraper {
+		process '//table/tr/td', 'text[]' => 'TEXT';
+		result 'text';
+	},
+);
 
 $SIG{ALRM} = sub { die 'TIMEOUT' };
 
@@ -55,24 +68,35 @@ sub get_proxy {
 }
 
 sub _get_proxy {
-	my $proxy_list = _get_proxy_list();
+	my $proxy_list = $fcache->get( $PROXY_KEY )
+	               || _get_proxy_list();
 
 	map  {return( $_ );           }
 	grep {! exists $black_list{$_}}
 	shuffle( @$proxy_list );
 
-	die 'ALL BLACKS...';
+	die 'ALL BLACKS... or freeproxylists site error';
 }
 sub _get_proxy_list {
-	my $proxy_list = $fcache->get( $PROXY_KEY );
-	return( $proxy_list ) if (ref $proxy_list eq 'ARRAY' && @$proxy_list);
+	my $uri = URI->new(qq{$URL/elite.html});
 
-	my $res = $scraper->scrape( URI->new($URL) );
+	my $url = shift @{$SCRAPERS[0]->scrape($uri) || []};
+	return( [] ) if (! $url);
+
+	my $onload = $SCRAPERS[1]->scrape($url);
+	my $data_url = join('', $URL,
+			$onload =~ m{'[^']+'[^,]*,[^']*'([^']+)'},
+	);
+	return( [] ) if (! $data_url);
 	
-	my @proxy_list =
-		grep { /^[^:]+:[^:]+$/ }
-		@$res;
-	push( @proxy_list, @LOCAL_PROXY );
+	my $text = $SCRAPERS[2]->scrape( URI->new($data_url) );
+	return( [] ) if (! $text);
+
+	my @proxy_list = ();
+	my $h = '';
+	map  {$h ? do {push( @proxy_list, "$h:$_" ); $h = ''} : do {$h = $_}}
+	grep { m{^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$|^\d{2,5}$}            }
+	@{$SCRAPERS[3]->scrape($text) || []};
 
 	$fcache->set( $PROXY_KEY, \@proxy_list, $TTL );
 	return( \@proxy_list );
@@ -81,8 +105,8 @@ sub _get_proxy_list {
 sub set_black {
 	my %args = @_;
 	return() if (exists $black_list{$args{host_port}});
-	return() if (first {$_ eq $args{host_port}} @LOCAL_PROXY);
 
+#print "black: $args{host_port}\n";	
 	my $black_stored = $fcache->get($BLACK_KEY) || {};
 	$black_stored->{$args{host_port}} = time();
 	$fcache->set( $BLACK_KEY, $black_stored );

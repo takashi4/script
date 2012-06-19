@@ -16,7 +16,7 @@ use Getopt::Long;
 Getopt::Long::Configure("bundling");
 
 use TT::PROXY;
-use TT::MAIL;
+use TT::MAIL2;
 use TT::TIME qw(yyyy_mm_dd_hh_mm  ep_time);
 
 my $exec_file = basename( $0 );
@@ -32,13 +32,14 @@ my $SAVE_FILE = "$ENV{HOME}/.fa.bin";
 my $LOG_FILE  = "$ENV{HOME}/.fa.log";
 my $PID_FILE  = "$ENV{HOME}/.fa.pid";
 
-my $mail = TT::MAIL->new(
-	from => $_::MAIL_FROM,
-	host => q{smtp.gmail.com},
-	port => 587,
-	user => $_::MAIL_USER,
-	pass => $_::MAIL_PASS,
-	to   => \@_::MAIL_TO,
+my $mail = TT::MAIL2->new(
+#	from => $_::MAIL_FROM,
+#	host => q{smtp.gmail.com},
+#	port => 587,
+#	user => $_::MAIL_USER,
+#	pass => $_::MAIL_PASS,
+#	to   => \@_::MAIL_TO,
+	bcc  => \@_::MAIL_TO,
 );
 if (-e $PID_FILE) {
 	print("ALREADY RUNNING\n");
@@ -48,10 +49,7 @@ if (-e $PID_FILE) {
 $SIG{INT} = $SIG{TERM} = sub {_del_pid(); print("Catch SIGNAL\n");exit(1);};
 $SIG{ALRM} = sub { die 'TIMEOUT!' };
 
-#my @PROXY_LIST = ();
-#chomp, push(@PROXY_LIST, $_) while (<DATA>);
 my $PREFS         = decode_utf8(q{東京|埼玉|神奈川|海外});
-#my $PREFS         = q{東京|埼玉|神奈川|海外};
 my $PREF_FILTERS  = qr{$PREFS}o;
 my $MAX_ERROR_CNT = 3;
 
@@ -120,7 +118,7 @@ while (1) {
 		}
 		
 		$mail->send_mail(
-			subject => decode_utf8('エラー復帰 (').yyyy_mm_dd_hh_mm().') @fa',
+			subject => decode_utf8('エラー復帰 ').yyyy_mm_dd_hh_mm().' @fa',
 			content => decode_utf8('捜索をつづけます。。。'),
 		), $err_cnt = 0 if ($err_cnt > 0);
 		sleep 60;
@@ -128,7 +126,7 @@ while (1) {
 	if (my $err = $@) {
 		++$err_cnt;
 		$mail->send_mail(
-			subject => decode_utf8("エラー($err_cnt 回) (").(yyyy_mm_dd_hh_mm()).') @fa',
+			subject => decode_utf8("エラー（$err_cnt 回） ").(yyyy_mm_dd_hh_mm()).' @fa',
 			content => "$proxy_host\n $0 @ ".(`hostname`)." $err\n"
 			           .($err_cnt == $MAX_ERROR_CNT ? 'die...' : ''),
 		);
@@ -255,6 +253,8 @@ sub _get_contents {
 	$ua->agent( $UA );
 	$proxy_host = TT::PROXY::get_proxy();
 	$ua->proxy( q{http}, "http://$proxy_host/" );
+#	$ua->proxy( q{http}, 'socks://localhost:9050' );
+#	$ua->proxy( q{http}, 'http://localhost:8118' );
 
 	my %params = (
 		m       => 'r_h',
