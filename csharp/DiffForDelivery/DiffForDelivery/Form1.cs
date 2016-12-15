@@ -60,7 +60,7 @@ namespace DiffForDelivery
                 return;
 
             var differ = new Differ(source, target, output);
-            differ.exec();
+            differ.Exec();
 
         }
 
