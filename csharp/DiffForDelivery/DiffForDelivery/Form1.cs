@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 
 namespace DiffForDelivery
 {
@@ -62,6 +63,22 @@ namespace DiffForDelivery
             var differ = new Differ(source, target, output);
             differ.Exec();
 
+            resultMessage(differ);
+        }
+
+        private void resultMessage(Differ differ)
+        {
+            var message = "削除対象はありません";
+            if (differ.DeletedList.Count > 0)
+                message = string.Format("以下が削除対象になります。\r\n{0}",
+                    string.Join("\r\n", differ.DeletedList.ToArray())
+                );
+
+            MessageBox.Show(message
+                , "削除対象"
+                , MessageBoxButtons.OK
+                , MessageBoxIcon.Information
+            );
         }
 
 
@@ -83,7 +100,7 @@ namespace DiffForDelivery
                 return false;
             }
             // フォルダ存在確認
-            if (!System.IO.Directory.Exists(folder))
+            if (!Directory.Exists(folder))
             {
                 MessageBox.Show(
                     label + "に正しいフォルダパスを指定してください"
