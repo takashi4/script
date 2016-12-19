@@ -3,6 +3,9 @@
 use strict;
 use warnings;
 
+use File::Basename qw(basename);
+require "$ENV{HOME}/.pass/".basename(__FILE__).".pass";
+
 use Plack::Request;
 use Plack::Response;
 use LWP::UserAgent;
@@ -10,10 +13,9 @@ use URI;
 use Encode qw(encode  decode_utf8);
 use TT::MAIL2;
 
-require "$ENV{HOME}/.pass/".(__FILE__).".pass";
 
 my $mail = TT::MAIL2->new(
-	bcc  => \@_::MAIL_TO,
+	to  => \@_::MAIL_TO,
 );
 
 my $app = sub {
