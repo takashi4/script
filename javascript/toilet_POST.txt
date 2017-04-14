@@ -1,0 +1,95 @@
+https://toilet.mono-connect.jp/a/v1/placement_statuses
+Request
+[56,72]
+
+Response
+[
+  {
+    "i": 56,
+    "b": [
+      [
+        0,
+        0,
+        119
+      ],
+      [
+        1,
+        0,
+        120
+      ],
+      [
+        0,
+        0,
+        121
+      ]
+    ]
+  },
+  {
+    "i": 72,
+    "c": true,
+    "b": [
+      [
+        1,
+        0,
+        132
+      ],
+      [
+        1,
+        0,
+        133
+      ],
+      [
+        1,
+        0,
+        134
+      ],
+      [
+        1,
+        0,
+        135
+      ]
+    ]
+  }
+]
+https://toilet.mono-connect.jp/a/v1/box_statuses
+Request
+[132, 133, 134, 135]
+
+Response
+[
+  {
+    "i": 132,
+    "c": true
+  },
+  {
+    "i": 133,
+    "c": true
+  },
+  {
+    "i": 134,
+    "c": true
+  },
+  {
+    "i": 135,
+    "c": true
+  }
+]
+
+Request
+[119, 120, 121]
+
+Response
+[
+  {
+    "i": 119,
+    "c": false
+  },
+  {
+    "i": 120,
+    "c": true
+  },
+  {
+    "i": 121,
+    "c": false
+  }
+]
