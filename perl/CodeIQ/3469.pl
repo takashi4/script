@@ -30,8 +30,10 @@ foreach my $map (@maps) {
     print "=================================\n";
 }
 
-# ２つの工事交差点を作成
-sub makeMap2 {
+# 任意の個数の工事交差点を作成
+sub makeLinearMap {
+	my ($n) = @_;
+
     my @maps;
     for (my $li1=1; $li1 < $X*$Y - 2; ++$li1) {
         for (my $li2=$li1+1; $li2 < $X*$Y - 1; ++$li2) {
@@ -42,6 +44,19 @@ sub makeMap2 {
         }
     }
     return @maps;       
+}
+
+sub _loop {
+	my ($i,$j,$h, $m)=@_;
+	if ($j == $m) {
+		push(@maps, [
+			map { defined $h->{$_} ? 1 : undef }
+			(0..($X*$Y - 1))
+		]);
+		return;
+	}
+
+	for (my $k=1+$i; $k<$X*$Y - 
 }
  
 #linear -> 2-D transform
