@@ -1,0 +1,21 @@
+松
+色分類だけなら
+・http://outlook-navi.com/qa/ol190.htm
+※メールに色分類が付き、予定表にも反映される
+
+
+竹
+組織カレンダー for Office 365
+・https://www.nextset.co.jp/calendar.html
+・https://www.nextset.co.jp/calendar.pdf
+
+
+梅
+
+EWSマネージAPIクライアントアプリケーション
+https://msdn.microsoft.com/ja-jp/library/office/dn567668(v=exchg.150).aspx
+
+
+Office365 非対応のため下記は不可
+Outlook 予定表 REST API
+・https://msdn.microsoft.com/ja-jp/office/office365/api/calendar-rest-operations
