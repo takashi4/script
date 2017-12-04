@@ -3,30 +3,32 @@
 use strict;
 use warnings;
 
-#use YAML qw(Dump);
+use YAML qw(Dump);
 
 chomp(my $arg = <>);
 my ($X, $Y, $N) = split(/\s+/, $arg);
 
+($X,$Y,$N)=(4,3,5);
 my @maps;
-for (my $i=1; $i<$X*$Y-2; ++$i) {
-	_loop(0,0,{},$i);
-}
-
-my $count = 0;
+push(@maps, [
+    [undef,undef,undef,1],
+    [undef,undef,undef,1],
+    [1,undef,undef,undef],
+]);
+print "NG(3,0)" if _invalid_point(3,0,$maps[0]);
+print "NG(3,1)" if _invalid_point(3,1,$maps[0]);
+print "NG(0,2)" if _invalid_point(0,2,$maps[0]);
+print "_is_no" if _is_no($maps[0]);
+=pod
 foreach my $map (@maps) {
     next if _is_no($map);
     my $len = promote(0,0, @$map);
     next if $len != $N;
-    #print "=================================\n";
-    #printMap(@$map);
-    #print "=================================\n";
-    ++$count;
+    print "=================================\n";
+    printMap(@$map);
+    print "=================================\n";
 }
-
-print $count, "\n";
-
-
+=cut
 # 任意の個数の工事交差点を作成
 sub _loop {
 	my ($i,$j,$h, $m)=@_;
@@ -85,7 +87,7 @@ sub promote {
 #指定された点から、始点・終点に帰れること
 sub _invalid_point {
     my ($i,$j,$map) = @_;
-    #return 1 unless _can_promote($i,$j,$map);
+    return 1 unless _can_promote($i,$j,$map);
     return 1 unless _can_demote($i,$j,$map);
     
     #valid point
@@ -140,9 +142,9 @@ sub _is_no {
     
     for (my $j=0; $j<@$map; ++$j) {
         for (my $i=0; $i<@{$map->[$j]}; ++$i) {
-#print <<DEBUG;
-#i = $i  j = $j
-#DEBUG
+print <<DEBUG;
+i = $i  j = $j
+DEBUG
             return 1 if defined $map->[$j][$i] && _invalid_point($i,$j,$map);
         }
     }

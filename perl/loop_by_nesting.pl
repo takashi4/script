@@ -17,8 +17,7 @@ sub loop {
     my ($i,$j, $h) = @_;
     if ($j == $m) {
         push(@maps, [
-            map { defined $h->{$_} ? 1 : undef }
-            (0..($n-1))
+            map { $h->{$_} } (0..($n-1))
         ]);
         return;
     }

@@ -19,6 +19,7 @@ my $prt_time = '';
 while (1) {
   my %ret = _get_info();
   if ($ret{time} && $prt_time ne $ret{time}) {
+    $ret{price} =~ s/(\d+).*/$1/;
     print<<OUT;
 $ret{time}  $ret{price}  $ret{usdjpy}
 OUT
