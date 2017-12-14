@@ -9,3 +9,6 @@ reverse''' x =
   case x of
     []     -> []
     (y:ys) -> reverse''' ys ++ [y]
+
+reverse''' = foldl (\acc x -> x : acc) []
+

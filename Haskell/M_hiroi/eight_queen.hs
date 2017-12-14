@@ -3,6 +3,7 @@
 -- [0,6,4,7,1,3,5,2] <- 行の位置
 import Data.List
 import Debug.Trace
+import Control.Monad
 
 queen :: [Int] -> [[Int]]
 queen xs = [x| x <- perm_n (length xs) xs, is_ok x]
@@ -81,3 +82,14 @@ select_queen (xs,ys) =
 select :: [a] -> [(a,[a])]
 select [x] = [(x,[])]
 select (x:xs) = (x,xs) : map (\(y,ys) -> (y,x:ys)) (select xs)
+
+-- Monad 版
+
+queen''' :: [Int] -> [[Int]]
+queen''' xs = _queen xs []
+  where
+    _queen [] ys = return (reverse ys)
+    _queen xs ys = do
+      x <- xs
+      guard (not (attack 1 x ys))
+      _queen (filter (/=x) xs) (x:ys)

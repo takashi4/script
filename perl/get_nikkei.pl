@@ -9,7 +9,7 @@ my $furl = Furl->new(
   agent => 'MyGreatUA/2.0',
   timeout => 10,
   headers => [
-    referer => q{https://nikkei225jp.com/chart/},
+    referer => q{https://nikkei225jp.com/cme/},
   ],
 );
 
