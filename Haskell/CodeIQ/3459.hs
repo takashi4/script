@@ -1,3 +1,10 @@
+# 7   5   2   -> 16
+# 29  10  10  -> 92378
+# 500 249 125 -> 0
+# 123 81  82  -> timeover
+# 436 400 212 -> --------
+# 497 490 399 -> --------
+
 type Table = [(Key,Value)]
 type Key   = (Tall,B_Num)
 type Value = Count
@@ -5,6 +12,9 @@ type Tall  = Integer
 type A_Num = Integer
 type B_Num = Integer
 type Count = Integer
+
+diV :: Count
+diV = 1000003
 
 main :: IO ()
 main = do
@@ -14,7 +24,7 @@ main = do
 f :: Tall -> A_Num -> B_Num -> Count
 f n a b
   | max_b < min_b = 0
-  | otherwise = (mod (sum $ map (g n) [min_b .. max_b]) 1000003)
+  | otherwise = (mod (sum $ map (g n) [min_b .. max_b]) diV)
   where
     max_b = min b (div n 2)
     min_b
@@ -50,5 +60,8 @@ g' n b tbl
                     (v:_) -> (v,tbl)
                     []    -> let
                                 b' = b-1
-                                (cnt',tbl') = (mod (sum $ map (flip.(flip g') b' tbl) [(2*b')..(n-2)]) 1000003)
+                                (cnt', tbl') = foldl h (0, tbl) [(2*b')..(n-2)]
+                                    where h = \(c, t) n' -> let
+                                                                (c',t') = g' n' b' t
+                                                            in ((c+c') `mod` diV, t')
                              in (cnt', tbl')

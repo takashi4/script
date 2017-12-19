@@ -3,9 +3,9 @@
 # 7   5   2   -> 16
 # 29  10  10  -> 92378
 # 500 249 125 -> 0
-# 123 81  82  -> X 284067 -> timeover
-# 436 400 212 -> timeover
-# 497 490 399 -> --------
+# 123 81  82  -> 475012(1sec)
+# 436 400 212 -> timeover(544100 50sec)
+# 497 490 399 -> timeover(663760 72sec)
 
 use strict;
 use warnings;
@@ -30,8 +30,6 @@ sub F {
     my $max_b = min($b, int($n/2));
 
     return 0 if ($max_b < $min_b);
-print "min_b: $min_b\n";
-print "max_b: $max_b\n";
     return sum( map{G($n,$_)} ($min_b..$max_b) );
 }
 
