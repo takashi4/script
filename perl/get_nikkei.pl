@@ -3,6 +3,7 @@
 use strict;
 no warnings 'all';
 
+use Data::Printer;
 use Furl;
 
 my $furl = Furl->new(

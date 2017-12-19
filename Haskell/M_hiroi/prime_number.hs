@@ -7,5 +7,5 @@ primes' = 2 : sieve [3,5..]
   where sieve (x:xs) = x : sieve (filter (\y -> y `mod` x /= 0) xs)
 
 primes'' :: [Integer]
-primes'' = 2: sieve' [3,5..]
+primes'' = 2: sieve [3,5..]
   where sieve (x:xs) = x : sieve [y| y<-xs, (mod y x) /=0]

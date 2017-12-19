@@ -44,3 +44,7 @@ perm_n'' :: Int -> [a] -> [[a]]
 perm_n'' 0 _ = [[]]
 perm_n'' n xs =
   [y:zs| (y,ys) <- select xs, zs <- perm_n'' (n-1) ys]
+
+rperm_n :: Int -> [a] -> [[a]]
+rperm_n 0 _  = [[]]
+rperm_n n xs = [x:xs | x<-xs, ys<-rperm_n (n-1) xs]
