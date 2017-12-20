@@ -1,9 +1,9 @@
-# 7   5   2   -> 16
-# 29  10  10  -> 92378
-# 500 249 125 -> 0
-# 123 81  82  -> timeover
-# 436 400 212 -> --------
-# 497 490 399 -> --------
+-- 7   5   2   -> 16
+-- 29  10  10  -> 92378
+-- 500 249 125 -> 0
+-- 123 81  82  -> timeover
+-- 436 400 212 -> --------
+-- 497 490 399 -> --------
 
 type Table = [(Key,Value)]
 type Key   = (Tall,B_Num)
@@ -33,35 +33,66 @@ f n a b
 
 
 g :: Tall -> B_Num -> Count
-g n b = fst (g' n b emptyTable)
+-- g n b = fst (g' n b emptyTable)
+g n b = g' n b
 
 emptyTable :: Table
 emptyTable = []
 
-lookupTable :: Key -> Table -> [Value]
-lookupTable key [] = []
-lookupTable key ((k,v):tbl)
-  | key > k   = []
-  | key == k  = [v]
-  | otherwise = lookupTable key tbl
+globalTable :: Table
+globalTable = []
 
-insertTable :: Key -> Value -> Table -> Table
-insertTable k v tbl = case break ((k>) . fst) tbl of
+-- lookupTable :: Key -> Table -> [Value]
+lookupTable :: Key -> [Value]
+-- lookupTable key [] = []
+-- lookupTable key ((k,v):tbl)
+lookupTable key = lT key globalTable
+  where
+    lT k []           = []
+    lT k ((k',v):tbl) 
+      | k > k'    = []
+      | k == k'   = [v]
+      | otherwise = lT k tbl
+
+-- insertTable :: Key -> Value -> Table -> Table
+insertTable :: Key -> Value -> Table
+-- insertTable k v tbl = case break ((k>) . fst) tbl of
+insertTable k v = case break ((k>) . fst) globalTable of
   (xs,ys) -> xs ++ (k,v):ys
 
-g' :: Tall -> B_Num -> Table -> (Count,Table)
-g' n b tbl 
+--g' :: Tall -> B_Num -> Table -> (Count,Table)
+g' :: Tall -> B_Num -> Count
+--g' n b tbl 
+g' n b
+  | n < 2     = 0
+  | n <2*b    = 0
+  | n == 2*b  = 1
+  | b == 0    = 1
+  | b == 1    = n-1
+  | otherwise = case lookupTable (n,b) of
+    (v:_) -> v
+    []    ->
+      let
+        b' = b-1
+        v' = foldl h 0 [(2*b')..(n-2)]
+          where h c n' = let c' = g' n' b'
+                         in (c+c') `mod` diV
+        globalTable = insertTable (n,b) v'
+      in v'    
+{-
   | n < 2     = (0,tbl)
   | n < 2*b   = (0,tbl)
   | n == 2*b  = (1,tbl)
   | b == 0    = (1,tbl)
   | b == 1    = (n-1,tbl)
   | otherwise = case lookupTable (n,b) tbl of
-                    (v:_) -> (v,tbl)
-                    []    -> let
-                                b' = b-1
-                                (cnt', tbl') = foldl h (0, tbl) [(2*b')..(n-2)]
-                                    where h = \(c, t) n' -> let
-                                                                (c',t') = g' n' b' t
-                                                            in ((c+c') `mod` diV, t')
-                             in (cnt', tbl')
+    (v:_) -> (v,tbl)
+    []    ->
+      let
+        b' = b-1
+        (cnt', tbl') = foldl h (0, tbl) [(2*b')..(n-2)]
+          where h (c,t) n' = let (c',t') = g' n' b' t
+                             in ((c+c') `mod` diV, t')
+        tbl'' = insertTable (n,b) cnt' tbl'
+      in (cnt', tbl'')
+-}
