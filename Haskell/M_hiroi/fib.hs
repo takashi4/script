@@ -59,9 +59,9 @@ insertTable k v tbl = case break ((k>) . fst) tbl of
 fib_memo :: Key -> Value
 fib_memo n =  fst $ fib_memo' n emptyTable
   where
-    fib_memo' 0 _   = (0, emptyTable)
-    fib_memo' 1 _   = (1, emptyTable)
-    fib_memo' n tbl = case lookupTable n tbl of
+    fib_memo' 0 tbl   = (0, tbl)
+    fib_memo' 1 tbl   = (1, tbl)
+    fib_memo' n tbl   = case lookupTable n tbl of
       (v:_) -> (v,tbl)
       []    ->
         let
