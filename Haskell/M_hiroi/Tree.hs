@@ -7,8 +7,14 @@ module Tree (
   fold_left, fold_right, isEmptyTree
 ) where
 
+import qualified Data.Foldable as F
+import Data.Monoid
+
 -- データ型の定義
 data Tree a = Nil | Node a (Tree a) (Tree a) deriving Show
+instance F.Foldable Tree where
+  foldMap f Nil=mempty
+  foldMap f (Node x l r)=F.foldMap f l `mappend` f x `mappend` F.foldMap f r
 
 -- 空の木
 emptyTree :: Tree a
@@ -77,12 +83,14 @@ toList tree = iter tree [] where
 
 -- 畳み込み
 fold_left :: (a -> b -> a) -> a -> Tree b -> a
-fold_left _ a Nil = a
-fold_left f a (Node x l r) = fold_left f (f (fold_left f a l) x) r
+-- fold_left _ a Nil = a
+-- fold_left f a (Node x l r) = fold_left f (f (fold_left f a l) x) r
+fold_left = F.foldl
 
 fold_right :: (a -> b -> b) -> b -> Tree a -> b
-fold_right _ a Nil = a
-fold_right f a (Node x l r) = fold_right f (f x (fold_right f a r)) l
+-- fold_right _ a Nil = a
+-- fold_right f a (Node x l r) = fold_right f (f x (fold_right f a r)) l
+fold_right = F.foldr
 
 -- 空の木か
 isEmptyTree :: Tree a -> Bool
